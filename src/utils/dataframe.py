@@ -44,14 +44,7 @@ def prepare_vindr_dataframe(df_find, class_list):
         original_df_find_len - len(df_find), len(df_find)))
 
     df_find = replace_categories(df_find, 'finding_categories', class_list)
-    label_to_class_mapping = {class_name: np.int8(
-        idx) for idx, class_name in enumerate(df_find['finding_categories'].unique())}
-
-    # Use .loc here to avoid setting on a copy
-    df_find.loc[:, 'finding_categories'] = df_find['finding_categories'].map(
-        label_to_class_mapping)
-
-    return df_find, label_to_class_mapping
+    return df_find
 
 
 def process_row(data_dir, row):
@@ -70,17 +63,21 @@ def process_row(data_dir, row):
     return sample_img
 
 
-def save_df_to_npy(df, data_dir, out_dir):
+def save_df_to_npy(df, class_list, data_dir, out_dir):
     os.makedirs(out_dir, exist_ok=True)
     images = []
+    labels = []
     with tqdm(total=len(df), desc='Preparing dataset') as pbar:
         for _, row in df.iterrows():
             img = process_row(data_dir, row)
             images.append(img)
-            pbar.update()
-
+            labels.append(class_list.index(row['finding_categories']))
     logging.info(f"Preparing file to save to ...")
     images_np = np.array(images)
-    file_path = os.path.join(out_dir, 'vindr-mammo.npy')
-    np.save(file_path, images_np)
-    logging.info(f"Saved {len(df)} images to {file_path}")
+    labels_np = np.array(labels)
+    img_file_path = os.path.join(out_dir, 'vindr-mammo-images.npy')
+    label_file_path = os.path.join(out_dir, 'vindr-mammo-labels.npy')
+
+    np.save(img_file_path, images_np)
+    np.save(label_file_path, labels_np)
+    logging.info(f"Saved {len(df)} images and label to {out_dir}")

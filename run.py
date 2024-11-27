@@ -27,5 +27,5 @@ if __name__ == "__main__":
     df_find = pd.read_csv(os.path.join(
         args.data_dir, 'finding_annotations.csv'))
 
-    df, classes = prepare_vindr_dataframe(df_find, class_list)
-    save_df_to_npy(df, args.data_dir, args.out_dir)
+    df = prepare_vindr_dataframe(df_find, class_list)
+    save_df_to_npy(df, class_list, args.data_dir, args.out_dir)
