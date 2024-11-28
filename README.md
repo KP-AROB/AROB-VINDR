@@ -19,7 +19,7 @@ These classes are :
 
 ## Usage
 
-To use the dataset class, you only need to instanciate it by giving it the loaded .csv file as a pandas DataFrame and the list of classes to keep in the Dataset.
+To use the dataset class, you only need to instanciate it by giving it the path to the .csv file (```data_dir```) and the list of classes to keep in the Dataset.
 
 ```python
 from dataset import VindrDicomDataset
@@ -27,7 +27,6 @@ import pandas as pd
 import os
 
 data_dir = './data'
-df = pd.read_csv(os.path.join(data_dir, 'finding_annotations.csv')) 
 class_list = ['mass', 'suspicious_calcification', 'no_finding']
-dataset = VindrDicomDataset(df, class_list, data_dir, 512)
+dataset = VindrDicomDataset(data_dir, class_list)
 ```

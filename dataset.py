@@ -3,10 +3,12 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 from src.utils.dataframe import prepare_vindr_dataframe
 from src.utils.image import load_dicom_image
+import pandas as pd
 
 
 class VindrDicomDataset(Dataset):
-    def __init__(self, df, class_list, data_dir, resize=512):
+    def __init__(self, data_dir, class_list, resize=512):
+        df = pd.read_csv(os.path.join(data_dir, 'finding_annotations.csv'))
         self.df = prepare_vindr_dataframe(df, class_list)
         self.class_list = class_list
         self.data_dir = data_dir
