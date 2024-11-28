@@ -1,8 +1,6 @@
 from pydicom import dcmread
 from pydicom.pixel_data_handlers import apply_voi_lut
 import numpy as np
-import os
-import cv2
 
 
 def load_dicom_image(path):

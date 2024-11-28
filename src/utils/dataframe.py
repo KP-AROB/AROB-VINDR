@@ -37,7 +37,6 @@ def prepare_vindr_dataframe(df_find, class_list):
     df_find['finding_categories'] = df_find['finding_categories'].apply(
         format_category_list)
 
-    # Filter the DataFrame and use .loc to modify values safely
     df_find = df_find[df_find['finding_categories'].apply(
         lambda x: contains_all_classes(x, class_list))]
     logging.info('{} lines were removed from the dataset. The dataset now contains {} images'.format(
@@ -72,6 +71,8 @@ def save_df_to_npy(df, class_list, data_dir, out_dir):
             img = process_row(data_dir, row)
             images.append(img)
             labels.append(class_list.index(row['finding_categories']))
+            pbar.update(1)
+
     logging.info(f"Preparing file to save to ...")
     images_np = np.array(images)
     labels_np = np.array(labels)
