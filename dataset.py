@@ -1,14 +1,18 @@
 import os
 from torch.utils.data import Dataset
 from torchvision import transforms
-from src.utils.dataframe import prepare_vindr_dataframe
-from src.utils.image import load_dicom_image
 import pandas as pd
 import ast
+from pydicom import dcmread
+from pydicom.pixel_data_handlers import apply_voi_lut
+import numpy as np
 
 
 class VindrDicomDataset(Dataset):
-    def __init__(self, data_dir, class_list, resize=512):
+    def __init__(self,
+                 data_dir,
+                 class_list=['mass', 'suspicious_calcification', 'no_finding'],
+                 resize=512):
 
         self.df = self.__prepare_vindr_dataframe(data_dir, class_list)
         self.class_list = class_list
@@ -18,6 +22,19 @@ class VindrDicomDataset(Dataset):
             transforms.ToTensor(),
             transforms.Resize((resize, resize))
         ])
+
+    def __load_dicom_image(self, path):
+        ds = dcmread(path)
+        img2d = ds.pixel_array
+        img2d = apply_voi_lut(img2d, ds)
+
+        if ds.PhotometricInterpretation == "MONOCHROME1":
+            img2d = np.amax(img2d) - img2d
+
+        img2d = img2d.astype(np.float32)
+        normalized_data = (img2d - np.min(img2d)) / \
+            (np.max(img2d) - np.min(img2d))
+        return normalized_data
 
     def __prepare_vindr_dataframe(self, data_dir, class_list):
 
@@ -57,7 +74,7 @@ class VindrDicomDataset(Dataset):
         sample_path = os.path.join(
             self.data_dir, 'images', row['study_id'], row['image_id'] + '.dicom')
 
-        img = load_dicom_image(sample_path)
+        img = self.__load_dicom_image(sample_path)
         img = (img - img.min()) / (img.max() - img.min() + 1e-8)
         img_tensor = self.transform(img)
         label = self.class_list.index(row['finding_categories'])
