@@ -1,10 +1,5 @@
 import logging
 import ast
-import numpy as np
-import os
-import cv2
-from src.utils.image import load_dicom_image
-from tqdm import tqdm
 
 
 def format_category_list(category_list):
@@ -44,41 +39,3 @@ def prepare_vindr_dataframe(df_find, class_list):
 
     df_find = replace_categories(df_find, 'finding_categories', class_list)
     return df_find
-
-
-def process_row(data_dir, row):
-    """
-    Function to load and process a DICOM image.
-    Converts the DICOM image into a numpy array of type float32.
-    """
-    sample_path = os.path.join(
-        data_dir, 'images', row['study_id'], row['image_id'] + '.dicom')
-    sample_img = load_dicom_image(sample_path)
-    sample_img = cv2.resize(
-        sample_img,
-        (512, 512),
-        interpolation=cv2.INTER_LINEAR,
-    )
-    return sample_img
-
-
-def save_df_to_npy(df, class_list, data_dir, out_dir):
-    os.makedirs(out_dir, exist_ok=True)
-    images = []
-    labels = []
-    with tqdm(total=len(df), desc='Preparing dataset') as pbar:
-        for _, row in df.iterrows():
-            img = process_row(data_dir, row)
-            images.append(img)
-            labels.append(class_list.index(row['finding_categories']))
-            pbar.update(1)
-
-    logging.info(f"Preparing file to save to ...")
-    images_np = np.array(images)
-    labels_np = np.array(labels)
-    img_file_path = os.path.join(out_dir, 'vindr-mammo-images.npy')
-    label_file_path = os.path.join(out_dir, 'vindr-mammo-labels.npy')
-
-    np.save(img_file_path, images_np)
-    np.save(label_file_path, labels_np)
-    logging.info(f"Saved {len(df)} images and label to {out_dir}")
