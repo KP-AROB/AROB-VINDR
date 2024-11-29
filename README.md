@@ -19,14 +19,8 @@ These classes are :
 
 ## Usage
 
-To use the dataset class, you only need to instanciate it by giving it the path to the .csv file (```data_dir```) and the list of classes to keep in the Dataset.
+To use prepare the dataset as .npy files you can run the following :
 
-```python
-from dataset import VindrDicomDataset
-import pandas as pd
-import os
-
-data_dir = './data'
-class_list = ['mass', 'suspicious_calcification', 'no_finding']
-dataset = VindrDicomDataset(data_dir, class_list)
+```bash
+python run.py --data_dir path/to/vindr --out_dir path/to/npy
 ```

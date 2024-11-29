@@ -1,32 +1,9 @@
 import argparse
 import logging
-import numpy as np
 import os
 from src.dataset import VindrDicomDataset
-from tqdm import tqdm
 from torch.utils.data import DataLoader
-
-
-def save_dataset(dataloader, mode='train'):
-    images_list = []
-    labels_list = []
-
-    with tqdm(total=len(dataloader), desc=f"Preparing {mode} images and labels") as pbar:
-        for images, labels in dataloader:
-            images_list.append(images.numpy())
-            labels_list.append(labels)
-            pbar.update(1)
-
-    images_np = np.concatenate(images_list, axis=0)
-    labels_np = np.concatenate(labels_list, axis=0)
-
-    np.save(os.path.join(args.out_dir, f'vindr_images_{mode}.npy'), images_np)
-    np.save(os.path.join(args.out_dir, f'vindr_labels_{mode}.npy'), labels_np)
-    logging.info(
-        f"Saved images to {os.path.join(args.out_dir, f'vindr_images_{mode}.npy')}")
-    logging.info(
-        f"Saved labels to {os.path.join(args.out_dir, f'vindr_labels_{mode}.npy')}")
-
+from src.prepare import save_npy_chunk_dataset
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -45,7 +22,11 @@ if __name__ == "__main__":
     )
     logging.info('Running Vindr Mammo dataset preparation')
 
-    os.makedirs(args.out_dir, exist_ok=True)
+    train_folder = os.path.join(args.out_dir, 'train')
+    test_folder = os.path.join(args.out_dir, 'test')
+
+    os.makedirs(train_folder, exist_ok=True)
+    os.makedirs(test_folder, exist_ok=True)
 
     # PREPARATION
 
@@ -58,7 +39,7 @@ if __name__ == "__main__":
         train_dataset, batch_size=8, shuffle=False, pin_memory=True, num_workers=4)
 
     test_dataloader = DataLoader(
-        train_dataset, batch_size=8, shuffle=False, pin_memory=True, num_workers=4)
+        test_dataset, batch_size=8, shuffle=False, pin_memory=True, num_workers=4)
 
-    save_dataset(train_dataloader, 'train')
-    save_dataset(test_dataloader, 'test')
+    save_npy_chunk_dataset(test_dataloader, train_folder, 'train', n_chunks=10)
+    save_npy_chunk_dataset(test_dataloader, test_folder, 'test', n_chunks=10)
