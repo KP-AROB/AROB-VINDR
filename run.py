@@ -41,5 +41,6 @@ if __name__ == "__main__":
     test_dataloader = DataLoader(
         test_dataset, batch_size=8, shuffle=False, pin_memory=True, num_workers=4)
 
-    save_npy_chunk_dataset(test_dataloader, train_folder, 'train', n_chunks=10)
+    save_npy_chunk_dataset(
+        train_dataloader, train_folder, 'train', n_chunks=10)
     save_npy_chunk_dataset(test_dataloader, test_folder, 'test', n_chunks=10)
